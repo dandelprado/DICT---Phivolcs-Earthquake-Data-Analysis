@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Philippines → Ilocos Norte: Earthquake Analysis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <h1>Philippines → Ilocos Norte: Earthquake Analysis</h1>
+    <div class="meta">Prepared by Dan del Prado • Data: PHIVOLCS (latest via Kaggle)</div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2>Introduction</h2>
+      <p>
+        This site presents a descriptive analysis of earthquakes in the Philippines with a focus on Ilocos Norte.
+        The goals are to provide a clear national overview and then zoom in on local activity to understand how Ilocos Norte compares to the broader context.
+      </p>
+      <p>
+        The key questions are: Do certain months show consistently higher activity?
+        How have event counts evolved over time?
+        Are higher counts linked to stronger earthquakes, or do they reflect clusters of minor events?
+      </p>
+    </section>
+
+    <section>
+      <h2>Methods</h2>
+      <ul>
+        <li>Data source: PHIVOLCS earthquake records accessed via Kaggle; the script fetches the latest version on each run.</li>
+        <li>Processing: Standardized timestamps; derived Year and Month; filtered Ilocos Norte via the General_Location field.</li>
+        <li>Metrics: National yearly totals; national year–month counts; national highest magnitude per year–month; national magnitude distribution and categories; Ilocos Norte monthly/yearly counts, distribution, trends, and categories.</li>
+        <li>Output: Static PNG charts in this page and a detailed HTML table for national max magnitudes by year–month.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Side‑by‑Side Comparisons</h2>
+
+      <div class="comparison">
+        <div class="card">
+          <h3>PH: Total Earthquakes per Year</h3>
+          <img src="ph-yearly-earthquake-counts.png" alt="PH yearly totals" />
+        </div>
+        <div class="card">
+          <h3>Ilocos Norte: Yearly Earthquake Counts</h3>
+          <img src="ilocos-yearly-earthquake-counts.png" alt="Ilocos yearly counts" />
+        </div>
+      </div>
+
+      <div class="comparison">
+        <div class="card">
+          <h3>PH: Counts per Year–Month</h3>
+          <img src="ph-yearmonth-earthquake-counts-heatmap.png" alt="PH year-month heatmap" />
+        </div>
+        <div class="card">
+          <h3>Ilocos Norte: Counts per Year–Month</h3>
+          <img src="ilocos-monthly-earthquake-counts.png" alt="Ilocos monthly heatmap" />
+        </div>
+      </div>
+
+      <div class="comparison">
+        <div class="card">
+          <h3>PH: Magnitude Distribution</h3>
+          <img src="ph-magnitude-distribution.png" alt="PH magnitude distribution" />
+        </div>
+        <div class="card">
+          <h3>Ilocos Norte: Magnitude Distribution</h3>
+          <img src="ilocos-magnitude-distribution.png" alt="Ilocos magnitude histogram" />
+        </div>
+      </div>
+
+      <div class="comparison">
+        <div class="card">
+          <h3>PH: Magnitude Categories</h3>
+          <img src="ph-magnitude-categories.png" alt="PH magnitude categories" />
+        </div>
+        <div class="card">
+          <h3>Ilocos Norte: Magnitude Categories</h3>
+          <img src="ilocos-magnitude-categories.png" alt="Ilocos categories" />
+        </div>
+      </div>
+
+      <div class="single">
+        <h3>PH: Highest Magnitude per Year–Month</h3>
+        <img src="ph-yearmonth-max-magnitude-heatmap.png" alt="PH max magnitude heatmap" />
+        <p class="note">
+          Full details: <a href="ph-yearmonth-max-magnitude-table.html">Highest magnitude by Year–Month (table)</a>
+        </p>
+      </div>
+
+      <div class="single">
+        <h3>Ilocos Norte: Average Magnitude and Event Count</h3>
+        <img src="ilocos-magnitude-eventcount-trend.png" alt="Ilocos trend" />
+      </div>
+    </section>
+
+    <section>
+      <h2>Results & Interpretation</h2>
+      <ul>
+        <li>Seasonality: No single month is consistently elevated nationally; peaks appear as short-lived clusters rather than a repeating seasonal pattern.</li>
+        <li>Outlier year: 2022 shows an anomalous spike in counts; subsequent years return to steadier levels.</li>
+        <li>Magnitude profile: National and Ilocos distributions are dominated by minor events; high counts generally reflect many small quakes.</li>
+        <li>Local vs national: Ilocos Norte mirrors the national picture, with occasional bursts but no fixed “active month.”</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">© 2025 Dan del Prado • For presentation and educational use</footer>
+</body>
+</html>
+
