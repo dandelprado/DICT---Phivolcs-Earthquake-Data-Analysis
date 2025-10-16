@@ -1,9 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import textwrap
 from pathlib import Path
-
 import kagglehub
 from kagglehub import KaggleDatasetAdapter
 
@@ -21,8 +19,6 @@ df['Date_Time_PH'] = pd.to_datetime(df['Date_Time_PH'], errors='coerce')
 df = df.dropna(subset=['Date_Time_PH'])
 df['Year']  = df['Date_Time_PH'].dt.year
 df['Month'] = df['Date_Time_PH'].dt.month
-
-# PHILIPPINES
 
 ph_yearly = df.groupby('Year').size()
 plt.figure(figsize=(14, 6))
@@ -88,6 +84,7 @@ agg_max = (
            MaxMagLocation=('General_Location','first'))
       .reset_index()
 )
+
 ph_max_pivot = agg_max.pivot(index='Year', columns='Month', values='MaxMagnitude').fillna(0)
 ph_max_pivot.columns = MONTH_LABELS[:len(ph_max_pivot.columns)]
 plt.figure(figsize=(14, 6))
@@ -98,29 +95,108 @@ plt.tight_layout()
 plt.savefig(DOCS / 'ph-yearmonth-max-magnitude-heatmap.png', dpi=DPI, bbox_inches='tight')
 plt.close()
 
-agg_max_view = agg_max.copy()
-agg_max_view['MonthName'] = agg_max_view['Month'].map({i+1:m for i,m in enumerate(MONTH_LABELS)})
-agg_max_view['MaxMagDate'] = agg_max_view['MaxMagDate'].dt.strftime('%Y-%m-%d %H:%M')
-display_table = agg_max_view.sort_values(['Year','Month'])[
-    ['Year','MonthName','MaxMagnitude','MaxMagLocation','MaxMagDate']
-].copy()
-
-def wrap_text(s, width=60):
-    if pd.isna(s): return ''
-    return "<br>".join(textwrap.wrap(str(s), width=width))
-
-display_table_html = display_table.copy()
-display_table_html['MaxMagLocation'] = display_table_html['MaxMagLocation'].apply(lambda s: wrap_text(s, width=60))
-html_table = display_table_html.to_html(index=False, escape=False)
-(DOCS / 'ph-yearmonth-max-magnitude-table.html').write_text(
-    '<meta charset="utf-8">'
-    '<style>body{font-family:Segoe UI,Arial,sans-serif;max-width:1200px;margin:2rem auto;} '
-    'table{border-collapse:collapse;width:100%;} th,td{border:1px solid #e5e7eb;padding:8px;vertical-align:top;} '
-    'th{background:#f0f3f7;text-align:left;}</style>' + html_table,
-    encoding='utf-8'
+leaders_count = agg_max.groupby('MaxMagLocation').size().reset_index(name='Months as Monthly Maximum')
+leaders_peak = (
+    agg_max.sort_values(['MaxMagLocation','MaxMagnitude','MaxMagDate'], ascending=[True,False,True])
+          .groupby('MaxMagLocation', as_index=False)
+          .first()[['MaxMagLocation','MaxMagnitude','MaxMagDate']]
+          .rename(columns={'MaxMagnitude':'Highest Monthly Magnitude','MaxMagDate':'When Highest Occurred'})
 )
+leaders_full = (
+    leaders_count.merge(leaders_peak, on='MaxMagLocation', how='left')
+                 .sort_values(['Months as Monthly Maximum','Highest Monthly Magnitude'], ascending=[False,False])
+                 .reset_index(drop=True)
+)
+leaders = leaders_full.head(10).copy()
+leaders['Highest Monthly Magnitude'] = leaders['Highest Monthly Magnitude'].round(2)
+leaders['When Highest Occurred'] = pd.to_datetime(leaders['When Highest Occurred']).dt.strftime('%Y-%m-%d %H:%M')
+leaders.rename(columns={'MaxMagLocation':'Top Location'}, inplace=True)
+leaders_html = leaders[['Top Location','Months as Monthly Maximum','Highest Monthly Magnitude','When Highest Occurred']].to_html(index=False)
 
-# ILOCOS NORTE
+df['Hour'] = df['Date_Time_PH'].dt.hour
+day_hours   = [6,7,8,9,10,11,12,13,14,15,16,17]
+night_hours = [18,19,20,21,22,23,0,1,2,3,4,5]
+hour_counts = df.groupby('Hour').size().reset_index(name='Count').sort_values('Hour')
+day_count   = int(hour_counts.loc[hour_counts['Hour'].isin(day_hours), 'Count'].sum())
+night_count = int(hour_counts.loc[hour_counts['Hour'].isin(night_hours), 'Count'].sum())
+total_count = int(hour_counts['Count'].sum()) if not hour_counts.empty else 0
+day_ratio   = (day_count/total_count) if total_count else 0
+night_ratio = (night_count/total_count) if total_count else 0
+
+felt = df[df['Magnitude'] >= 4.0].copy()
+felt_hour_counts = (felt['Date_Time_PH'].dt.hour.value_counts()
+                    .rename_axis('Hour').reset_index(name='Count').sort_values('Hour'))
+felt_day   = int(felt_hour_counts.loc[felt_hour_counts['Hour'].isin(day_hours), 'Count'].sum()) if not felt_hour_counts.empty else 0
+felt_night = int(felt_hour_counts.loc[felt_hour_counts['Hour'].isin(night_hours), 'Count'].sum()) if not felt_hour_counts.empty else 0
+felt_total = felt_day + felt_night
+felt_day_ratio   = (felt_day/felt_total) if felt_total else 0
+felt_night_ratio = (felt_night/felt_total) if felt_total else 0
+
+page_html = f"""
+<meta charset="utf-8">
+<style>
+  :root {{
+    --ink:#1f2937; --muted:#6b7280; --brand:#c0392b; --edge:#e5e7eb;
+  }}
+  body {{ font-family:Segoe UI,Arial,sans-serif; color:var(--ink); max-width:1100px; margin:2rem auto; }}
+  h1 {{ margin:.2rem 0 1rem; font-size:1.6rem; color:#c0392b; text-align:center; }}
+  h2 {{ margin:1.1rem 0 .5rem; font-size:1.15rem; color:#3778c2; }}
+  p.lead {{ color:var(--muted); text-align:center; margin:.4rem 0 1.2rem; }}
+  section {{ background:#fff; border:1px solid var(--edge); border-radius:10px; padding:1rem 1.2rem; box-shadow:0 2px 8px rgba(0,0,0,.04); margin:1rem 0; }}
+  table {{ border-collapse:collapse; width:100%; }}
+  th,td {{ border:1px solid var(--edge); padding:8px; vertical-align:top; }}
+  th {{ background:#f0f3f7; text-align:left; }}
+  .meta {{ color:var(--muted); font-size:.95rem; text-align:center; margin-bottom:.8rem; }}
+  .pill {{ display:inline-block; background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; padding:.2rem .55rem; border-radius:999px; font-size:.85rem; margin:.15rem .3rem 0 0; }}
+  .grid2 {{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; }}
+  @media (max-width:900px){{ .grid2 {{ grid-template-columns:1fr; }} }}
+</style>
+
+<h1>Top Earthquake Epicenters & Timing</h1>
+<p class="lead">
+  Philippine sites most frequently topping monthly maximum magnitude, the largest monthly max at each, and its timing. Felt events (≥4.0) are compared by time of day.
+</p>
+<div class="meta">
+  <span class="pill">Source: PHIVOLCS via Kaggle</span>
+</div>
+
+<section>
+  <h2>Most Frequent “Monthly Maximum” Locations</h2>
+  {leaders_html}
+  <p class="meta">Top 10 of {len(leaders_full):,} locations with one or more months as top epicenter.</p>
+</section>
+
+<section>
+  <div class="grid2">
+    <div>
+      <h2>All Earthquakes: Day vs Night</h2>
+      <table>
+        <thead><tr><th>Part of Day</th><th>Hours</th><th>Count</th><th>Percent</th></tr></thead>
+        <tbody>
+          <tr><td>Daytime</td><td>06–17</td><td>{day_count:,}</td><td>{day_ratio:.1%}</td></tr>
+          <tr><td>Nighttime</td><td>18–05</td><td>{night_count:,}</td><td>{night_ratio:.1%}</td></tr>
+          <tr><td>Total</td><td>00–23</td><td>{total_count:,}</td><td>100%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h2>Felt Earthquakes (≥4.0): Day vs Night</h2>
+      <table>
+        <thead><tr><th>Part of Day</th><th>Hours</th><th>Count</th><th>Percent</th></tr></thead>
+        <tbody>
+          <tr><td>Daytime</td><td>06–17</td><td>{felt_day:,}</td><td>{felt_day_ratio:.1%}</td></tr>
+          <tr><td>Nighttime</td><td>18–05</td><td>{felt_night:,}</td><td>{felt_night_ratio:.1%}</td></tr>
+          <tr><td>Total</td><td>00–23</td><td>{felt_total:,}</td><td>100%</td></tr>
+        </tbody>
+      </table>
+      <p class="meta">Felt = magnitude ≥ 4.0 as a simple proxy for perceptibility.</p>
+    </div>
+  </div>
+</section>
+"""
+
+(DOCS / 'ph-yearmonth-max-magnitude-table.html').write_text(page_html, encoding='utf-8')
+
 ilocos_norte = df[df['General_Location'].str.contains('Ilocos Norte', case=False, na=False)].copy()
 
 plt.figure(figsize=(14, 6))
@@ -195,3 +271,4 @@ if not ilocos_norte.empty:
     plt.tight_layout()
     plt.savefig(DOCS / 'ilocos-yearmonth-max-magnitude-heatmap.png', dpi=DPI, bbox_inches='tight')
     plt.close()
+
