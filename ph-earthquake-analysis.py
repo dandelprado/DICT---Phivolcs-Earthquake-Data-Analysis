@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import textwrap
 
-# --- Load latest dataset directly into a DataFrame (KaggleHub) ---
 import kagglehub
 from kagglehub import KaggleDatasetAdapter
 
@@ -16,20 +15,15 @@ df = kagglehub.load_dataset(
     FILE_PATH
 )
 
-# --- Standardize datetime and derive time parts ---
 df['Date_Time_PH'] = pd.to_datetime(df['Date_Time_PH'], errors='coerce')
 df = df.dropna(subset=['Date_Time_PH'])
 df['Year']  = df['Date_Time_PH'].dt.year
 df['Month'] = df['Date_Time_PH'].dt.month
 
-# Month labels
 MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
-# =========================
-# A) PHILIPPINES OVERVIEW
-# =========================
+# PH overview visualizations
 
-# 1) PH total earthquakes per year
 ph_yearly = df.groupby('Year').size()
 
 plt.figure(figsize=(14, 6))
@@ -43,7 +37,6 @@ plt.tight_layout()
 plt.show()
 plt.close()
 
-# 2) PH total earthquakes per year-month (heatmap)
 ph_monthly = df.groupby(['Year', 'Month']).size().reset_index(name='Count')
 ph_monthly_pivot = ph_monthly.pivot(index='Year', columns='Month', values='Count').fillna(0)
 
@@ -56,8 +49,6 @@ plt.tight_layout()
 plt.show()
 plt.close()
 
-# 3) PH highest magnitude per year-month (heatmap + table)
-#    Sort so that ties pick the earliest event among the max magnitudes
 agg_max = (
     df.sort_values(['Year', 'Month', 'Magnitude', 'Date_Time_PH'],
                    ascending=[True, True, False, True])
@@ -70,7 +61,6 @@ agg_max = (
       .reset_index()
 )
 
-# 3a) Heatmap of max magnitude by year-month with month labels
 ph_max_pivot = agg_max.pivot(index='Year', columns='Month', values='MaxMagnitude').fillna(0)
 ph_max_pivot.columns = MONTH_LABELS[:len(ph_max_pivot.columns)]
 
@@ -83,17 +73,14 @@ plt.tight_layout()
 plt.show()
 plt.close()
 
-# 3b) Table of Year, Month, MaxMagnitude, Location, Date
 agg_max_view = agg_max.copy()
 agg_max_view['MonthName'] = agg_max_view['Month'].map({i+1: m for i, m in enumerate(MONTH_LABELS)})
 agg_max_view['MaxMagDate'] = agg_max_view['MaxMagDate'].dt.strftime('%Y-%m-%d %H:%M')
 
-# Sort using numeric Month (kept internally), then select display columns
 display_table = agg_max_view.sort_values(['Year','Month'])[
     ['Year','MonthName','MaxMagnitude','MaxMagLocation','MaxMagDate']
 ].copy()
 
-# Wrap long location names for the printed table
 def wrap_text(s, width=40):
     if pd.isna(s):
         return ''
@@ -122,16 +109,11 @@ plt.tight_layout()
 plt.show()
 plt.close()
 
-# =========================
-# B) ILOCOS NORTE FOCUS
-# =========================
-
-# Filter to Ilocos Norte
+# IN Focus
 ilocos_norte = df[
     df['General_Location'].str.contains('Ilocos Norte', case=False, na=False)
 ].copy()
 
-# Monthly counts (Ilocos Norte heatmap)
 plt.figure(figsize=(14, 6))
 ilocos_yearly_count = ilocos_norte.groupby('Year').size()
 ilocos_monthly_count = ilocos_norte.groupby(['Year', 'Month']).size().reset_index(name='Count')
@@ -144,7 +126,6 @@ plt.tight_layout()
 plt.show()
 plt.close()
 
-# Yearly counts (Ilocos Norte bar)
 plt.figure(figsize=(14, 6))
 ilocos_yearly_count.plot(kind='bar', color='skyblue', edgecolor='black')
 plt.title('Number of Earthquakes per Year in Ilocos Norte')
@@ -156,7 +137,6 @@ plt.tight_layout()
 plt.show()
 plt.close()
 
-# Magnitude categorization
 def mag_category(mag: float) -> str:
     if mag < 4.0:
         return 'Minor'
@@ -167,7 +147,6 @@ def mag_category(mag: float) -> str:
 
 ilocos_norte['MagCategory'] = ilocos_norte['Magnitude'].apply(mag_category)
 
-# Magnitude histogram (Ilocos Norte)
 plt.figure(figsize=(10, 6))
 plt.hist(ilocos_norte['Magnitude'], bins=20, color='teal', edgecolor='black', alpha=0.7)
 plt.title('Distribution of Earthquake Magnitudes in Ilocos Norte')
@@ -178,7 +157,6 @@ plt.tight_layout()
 plt.show()
 plt.close()
 
-# Avg magnitude vs event count trend (Ilocos Norte)
 plt.figure(figsize=(12, 6))
 mag_trend = ilocos_norte.groupby('Year')['Magnitude'].agg(['mean', 'count']).reset_index()
 ax1 = plt.gca()
@@ -195,7 +173,6 @@ plt.tight_layout()
 plt.show()
 plt.close()
 
-# Magnitude categories (Ilocos Norte)
 plt.figure(figsize=(8, 5))
 ilocos_norte['MagCategory'].value_counts().reindex(['Minor', 'Moderate', 'Significant']).plot(
     kind='bar', color=['green','orange','red'])
@@ -205,6 +182,3 @@ plt.xticks(rotation=0)
 plt.tight_layout()
 plt.show()
 plt.close()
-
-print("Generated national overview and Ilocos Norte visualizations.")
-
