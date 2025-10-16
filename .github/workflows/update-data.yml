@@ -2,7 +2,7 @@ name: Refresh PHIVOLCS charts and pages
 
 on:
   schedule:
-    - cron: "0 18 * * *"
+    - cron: "0 16 * * 7"
   workflow_dispatch: {}
 
 permissions:

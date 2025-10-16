@@ -51,34 +51,27 @@
          <section class="tab-panel" id="panel-methods" role="tabpanel" aria-labelledby="tab-methods">
             <h2>Methods</h2>
             <h3>Automation</h3>
-            <p class="center"> Charts and the HTML summary are rebuilt automatically by a GitHub Actions workflow on a daily schedule and may also be triggered manually as needed.[2][1] </p>
-            <p class="center"> The workflow runs at 18:00 UTC each day, which is 02:00 Philippine Standard Time (UTC+8) the following calendar day in the Philippines.[2] </p>
+            <p class="center"> Charts and the HTML summary are rebuilt automatically by a GitHub Actions workflow on a weekly schedule and can also be triggered manually when needed. </p>
+            <p class="center"> The workflow runs every Sunday at 16:00 UTC, which corresponds to Monday 00:00 Philippine Standard Time (UTC+8). </p>
             <h3>Data source</h3>
-            <p class="center"> Earthquake records come from the PHIVOLCS catalog accessed via Kaggle at run time; the workflow loads the latest available CSV and regenerates charts and a compact HTML summary to the docs folder for publishing.[1] </p>
+            <p class="center"> Earthquake records come from the PHIVOLCS catalog accessed via Kaggle at run time; the workflow loads the latest available CSV and regenerates charts and a compact HTML summary to the docs folder for publishing. </p>
             <h3>Data coverage</h3>
-            <p class="center"> Only records with a valid Philippine local timestamp are included; results are presented for the Philippines as a whole and for Ilocos Norte, identified using the General_Location field.[1] </p>
+            <p class="center"> Only records with a valid Philippine local timestamp are included; results are presented for the Philippines as a whole and for Ilocos Norte, identified using the General_Location field. </p>
             <h3>Preparation</h3>
             <ul>
                <li>Convert event time to a proper datetime and derive year, month, hour, and day of week for grouping.</li>
-               [1] 
                <li>Classify magnitudes as Minor (&lt;4.0), Moderate (4.0–5.99), and Significant (≥6.0).</li>
-               [1] 
             </ul>
             <h3>Analysis</h3>
             <ul>
                <li>Frequency: annual counts and a heatmap of monthly activity for both national and Ilocos Norte views.</li>
-               [1] 
                <li>Magnitude: histogram of magnitudes and bar chart of category counts (Minor/Moderate/Significant).</li>
-               [1] 
                <li>Trends: per year, plot average magnitude together with number of events to compare strength vs activity.</li>
-               [1] 
                <li>Extremes: for each calendar month, select the strongest quake and retain its time and location; show monthly peaks in a heatmap and summarize locations that most often rank first, including each location’s single highest monthly maximum and when it occurred.</li>
-               [1] 
                <li>Timing: show daytime (06:00–17:59) vs nighttime (18:00–05:59) shares for all events and for potentially felt events (magnitude ≥4.0).</li>
-               [1] 
             </ul>
             <h3>Outputs</h3>
-            <p class="center"> Export static PNG charts and a compact HTML page highlighting top epicenters, the largest monthly maximum at each, and day/night splits; the scheduled workflow refreshes all outputs when new PHIVOLCS data are available or when manually triggered.[2][1] </p>
+            <p class="center"> Export static PNG charts and a compact HTML page highlighting top epicenters, the largest monthly maximum at each, and day/night splits; the weekly workflow refreshes all outputs when new PHIVOLCS data are available or when manually triggered. </p>
          </section>
          <section class="tab-panel" id="panel-yearly" role="tabpanel" aria-labelledby="tab-yearly">
             <h2>Earthquakes per Year</h2>
